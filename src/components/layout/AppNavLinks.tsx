@@ -12,7 +12,7 @@ export const NAV_LINKS = [
   { href: "/app/goals", label: "Goals" },
   { href: "/app/loans", label: "Loans" },
   { href: "/app/receivables", label: "Receivables" },
-  { href: "/app/tools/compound-interest", label: "Compound" },
+  { href: "/app/tools/sharia-profit", label: "Sharia Profit" },
   { href: "/app/tools/fire", label: "FIRE" },
   { href: "/app/settings", label: "Settings" },
 ];

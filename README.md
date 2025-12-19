@@ -22,7 +22,7 @@ A complete personal finance planning + management web application for **Banglade
 * Provide **tracking** (daily/weekly/monthly) with charts and summaries.
 * Provide **bank + investment management** (manual, no integrations).
 * Provide **savings goals + loan tracking**.
-* Provide **compound interest** + **FIRE calculator**.
+* Provide **Sharia profit sharing** + **FIRE calculator**.
 * Provide a **modern analytics dashboard**.
 * Secure **login system** with per-user data isolation.
 * Fully **responsive** UI for desktop dashboard + mobile view.
@@ -191,26 +191,28 @@ Single repo, single Next.js application contains:
 
 ---
 
-## 4.7 Compound Interest Calculator
+## 4.7 Sharia Profit-Sharing Calculator
 
 ### Inputs
 
-* Principal
+* Initial capital
 * Monthly contribution
-* Annual interest rate
-* Compounding frequency (monthly recommended)
+* Expected annual profit rate
+* Investor profit share (%)
+* Profit handling (reinvest or withdraw)
 * Duration (years/months)
 
 ### Outputs
 
-* Future value
+* Projected value
 * Total contributions
-* Total interest earned
+* Total profit earned (investor share)
 * Growth chart + year-by-year table
 
 ### Acceptance Criteria
 
-* Results match verified formula test cases.
+* Uses a profit-sharing model (no interest).
+* Clear disclaimer: “Profit is not guaranteed.”
 
 ---
 
@@ -284,7 +286,7 @@ Single repo, single Next.js application contains:
 * `/app/goals/[id]`
 * `/app/loans`
 * `/app/loans/[id]`
-* `/app/tools/compound-interest`
+* `/app/tools/sharia-profit`
 * `/app/tools/fire`
 * `/app/settings` (profile, data export, theme, etc.)
 
@@ -466,7 +468,7 @@ budget-manager/
 │  │  │  ├─ app/goals/[id]/page.tsx
 │  │  │  ├─ app/loans/page.tsx
 │  │  │  ├─ app/loans/[id]/page.tsx
-│  │  │  ├─ app/tools/compound-interest/page.tsx
+│  │  │  ├─ app/tools/sharia-profit/page.tsx
 │  │  │  ├─ app/tools/fire/page.tsx
 │  │  │  └─ app/settings/page.tsx
 │  │  │
@@ -537,7 +539,7 @@ budget-manager/
 │  │  │  ├─ auth.service.ts
 │  │  │  ├─ analytics.service.ts
 │  │  │  ├─ calculators/
-│  │  │  │  ├─ compound.ts
+│  │  │  │  ├─ sharia-profit.ts
 │  │  │  │  └─ fire.ts
 │  │  │  └─ money.ts                     # formatting + minor units helpers
 │  │  └─ auth/

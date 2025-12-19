@@ -28,7 +28,7 @@ const nav = [
   { href: "/app/goals", label: "Goals", icon: Target },
   { href: "/app/loans", label: "Loans", icon: HandCoins },
   { href: "/app/receivables", label: "Receivables", icon: HandCoins },
-  { href: "/app/tools/compound-interest", label: "Compound", icon: Calculator },
+  { href: "/app/tools/sharia-profit", label: "Sharia Profit", icon: Calculator },
   { href: "/app/tools/fire", label: "FIRE", icon: Flame },
   { href: "/app/settings", label: "Settings", icon: Settings },
 ];

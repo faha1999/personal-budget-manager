@@ -52,7 +52,7 @@ export default function PublicLandingPage() {
 
             <p className="mt-4 text-base leading-7 text-slate-600">
               Log income and expenses in seconds, manage bank accounts and investments,
-              set savings goals, track loans, and explore Compound Interest + FIRE planning —
+              set savings goals, track loans, and explore Sharia profit sharing + FIRE planning —
               all in one clean dashboard.
             </p>
 
@@ -74,7 +74,7 @@ export default function PublicLandingPage() {
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
               <FeaturePill title="Daily tracking" desc="Income & expense logging" />
               <FeaturePill title="Analytics" desc="Charts & summaries" />
-              <FeaturePill title="Tools" desc="Compound + FIRE" />
+              <FeaturePill title="Tools" desc="Sharia + FIRE" />
             </div>
           </div>
 

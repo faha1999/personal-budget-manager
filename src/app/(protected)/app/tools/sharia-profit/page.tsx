@@ -1,82 +1,102 @@
-//       TODO: Interactive compound interest calculator with chart/table.
+// Sharia-compliant profit-sharing calculator with chart/table.
 "use client";
 
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 
+type ProfitMode = "reinvest" | "withdraw";
+
 type Row = {
   year: number;
   contributed: number;
-  interest: number;
-  balance: number;
+  profit: number;
+  value: number;
 };
 
-export default function CompoundInterestPage() {
+export default function ShariaProfitPage() {
   const [principal, setPrincipal] = useState("100000");
   const [monthly, setMonthly] = useState("5000");
-  const [rate, setRate] = useState("12"); // annual %
+  const [profitRate, setProfitRate] = useState("10"); // expected annual profit rate
+  const [profitShare, setProfitShare] = useState("70"); // investor share %
   const [years, setYears] = useState("10");
+  const [profitMode, setProfitMode] = useState<ProfitMode>("reinvest");
   const [inputsOpen, setInputsOpen] = useState(false);
 
   const model = useMemo(() => {
     const P = clampNum(principal);
     const PMT = clampNum(monthly);
-    const rAnnual = clampNum(rate) / 100;
+    const rAnnual = clampNum(profitRate) / 100;
+    const sharePct = clampPct(profitShare);
     const nYears = Math.max(0, Math.floor(clampNum(years)));
+    const share = sharePct / 100;
 
     const rows: Row[] = [];
-    const rMonthly = rAnnual / 12;
 
     let balance = P;
     let contributed = P;
-    let totalInterest = 0;
+    let profitEarned = 0;
+    let withdrawnProfit = 0;
 
     for (let y = 1; y <= nYears; y++) {
-      let interestThisYear = 0;
-
       for (let m = 1; m <= 12; m++) {
         balance += PMT;
         contributed += PMT;
 
-        const i = balance * rMonthly;
-        balance += i;
-        interestThisYear += i;
+        const poolProfit = balance * (rAnnual / 12);
+        const investorProfit = poolProfit * share;
+
+        profitEarned += investorProfit;
+
+        if (profitMode === "reinvest") {
+          balance += investorProfit;
+        } else {
+          withdrawnProfit += investorProfit;
+        }
       }
 
-      totalInterest += interestThisYear;
       rows.push({
         year: y,
         contributed,
-        interest: totalInterest,
-        balance,
+        profit: profitEarned,
+        value: balance + withdrawnProfit,
       });
     }
 
     return {
       rows,
-      final: rows.at(-1) ?? { year: 0, contributed, interest: totalInterest, balance },
+      final: rows.at(-1) ?? {
+        year: 0,
+        contributed,
+        profit: profitEarned,
+        value: balance + withdrawnProfit,
+      },
+      managerShare: Math.max(0, 100 - sharePct),
     };
-  }, [principal, monthly, rate, years]);
+  }, [principal, monthly, profitRate, profitShare, years, profitMode]);
 
   const resetDefaults = () => {
     setPrincipal("100000");
     setMonthly("5000");
-    setRate("12");
+    setProfitRate("10");
+    setProfitShare("70");
     setYears("10");
+    setProfitMode("reinvest");
   };
 
-  const setAggressive = () => {
+  const setGrowth = () => {
     setPrincipal("150000");
     setMonthly("12000");
-    setRate("14");
+    setProfitRate("12");
+    setProfitShare("75");
     setYears("15");
+    setProfitMode("reinvest");
   };
 
   return (
     <div className="space-y-6">
       <Header
-        title="Compound Interest"
-        subtitle="A premium, minimal calculator to visualize growth over time."
+        title="Sharia Profit Sharing"
+        subtitle="Estimate halal investment growth with Mudarabah-style profit sharing (no interest)."
       />
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -107,38 +127,79 @@ export default function CompoundInterestPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={setAggressive}
+                    onClick={setGrowth}
                     className="rounded-lg bg-slate-900 px-3 py-1 font-semibold text-white hover:bg-slate-800"
                   >
-                    Aggressive
+                    Growth
                   </button>
                 </div>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Principal (BDT)">
-                  <input value={principal} onChange={(e) => setPrincipal(e.target.value)} className={input()} inputMode="numeric" />
+                <Field label="Initial capital (BDT)">
+                  <input
+                    value={principal}
+                    onChange={(e) => setPrincipal(e.target.value)}
+                    className={input()}
+                    inputMode="numeric"
+                  />
                 </Field>
                 <Field label="Monthly contribution (BDT)">
-                  <input value={monthly} onChange={(e) => setMonthly(e.target.value)} className={input()} inputMode="numeric" />
+                  <input
+                    value={monthly}
+                    onChange={(e) => setMonthly(e.target.value)}
+                    className={input()}
+                    inputMode="numeric"
+                  />
                 </Field>
-                <Field label="Annual return (%)">
-                  <input value={rate} onChange={(e) => setRate(e.target.value)} className={input()} inputMode="decimal" />
+                <Field label="Expected annual profit rate (%)">
+                  <input
+                    value={profitRate}
+                    onChange={(e) => setProfitRate(e.target.value)}
+                    className={input()}
+                    inputMode="decimal"
+                  />
+                </Field>
+                <Field label="Investor profit share (%)">
+                  <input
+                    value={profitShare}
+                    onChange={(e) => setProfitShare(e.target.value)}
+                    className={input()}
+                    inputMode="decimal"
+                  />
                 </Field>
                 <Field label="Years">
-                  <input value={years} onChange={(e) => setYears(e.target.value)} className={input()} inputMode="numeric" />
+                  <input
+                    value={years}
+                    onChange={(e) => setYears(e.target.value)}
+                    className={input()}
+                    inputMode="numeric"
+                  />
+                </Field>
+                <Field label="Profit handling">
+                  <select
+                    value={profitMode}
+                    onChange={(e) => setProfitMode(e.target.value as ProfitMode)}
+                    className={input()}
+                  >
+                    <option value="reinvest">Reinvest profits</option>
+                    <option value="withdraw">Withdraw profits</option>
+                  </select>
                 </Field>
               </div>
 
               <div className="mt-5 rounded-2xl bg-slate-50 p-4 ring-1 ring-black/5">
                 <p className="text-xs font-semibold text-slate-900">Result</p>
                 <div className="mt-2 grid gap-2 text-sm">
-                  <KV label="Future value" value={money(model.final.balance)} strong />
-                  <KV label="Total contributed" value={money(model.final.contributed)} />
-                  <KV label="Interest earned" value={money(model.final.interest)} />
+                  <KV label="Projected value" value={money(model.final.value)} strong />
+                  <KV label="Capital contributed" value={money(model.final.contributed)} />
+                  <KV label="Profit earned (investor share)" value={money(model.final.profit)} />
                 </div>
-                <p className="mt-3 text-xs text-slate-500">
-                  This is an estimation, not financial advice.
+                <p className="mt-3 text-xs text-slate-600">
+                  Investor share: {clampPct(profitShare).toFixed(0)}% / Manager share: {model.managerShare.toFixed(0)}%
+                </p>
+                <p className="mt-2 text-xs text-slate-500">
+                  Profit is not guaranteed. This model assumes a stable expected profit rate.
                 </p>
               </div>
             </>
@@ -147,11 +208,11 @@ export default function CompoundInterestPage() {
           )}
         </Card>
 
-        <Card title="Growth preview" subtitle="Simple premium sparkline">
-          <Sparkline points={model.rows.map((r) => r.balance)} />
+        <Card title="Value preview" subtitle="Projected portfolio value">
+          <Sparkline points={model.rows.map((r) => r.value)} />
           <div className="mt-3 flex items-center justify-between text-xs text-slate-600">
             <span>Year 1</span>
-            <span className="font-semibold text-slate-900">{money(model.final.balance)}</span>
+            <span className="font-semibold text-slate-900">{money(model.final.value)}</span>
             <span>Year {model.final.year}</span>
           </div>
         </Card>
@@ -163,9 +224,9 @@ export default function CompoundInterestPage() {
             <thead>
               <tr className="border-b border-black/5 text-xs text-slate-500">
                 <th className="px-4 py-3 font-medium">Year</th>
-                <th className="px-4 py-3 font-medium">Contributed</th>
-                <th className="px-4 py-3 font-medium">Interest</th>
-                <th className="px-4 py-3 text-right font-medium">Balance</th>
+                <th className="px-4 py-3 font-medium">Capital contributed</th>
+                <th className="px-4 py-3 font-medium">Profit earned</th>
+                <th className="px-4 py-3 text-right font-medium">Total value</th>
               </tr>
             </thead>
             <tbody className="text-sm">
@@ -180,8 +241,8 @@ export default function CompoundInterestPage() {
                   <tr key={r.year} className="border-b border-black/5 last:border-none">
                     <td className="px-4 py-3 text-slate-700">{r.year}</td>
                     <td className="px-4 py-3 text-slate-700">{money(r.contributed)}</td>
-                    <td className="px-4 py-3 text-slate-700">{money(r.interest)}</td>
-                    <td className="px-4 py-3 text-right font-semibold text-slate-900">{money(r.balance)}</td>
+                    <td className="px-4 py-3 text-slate-700">{money(r.profit)}</td>
+                    <td className="px-4 py-3 text-right font-semibold text-slate-900">{money(r.value)}</td>
                   </tr>
                 ))
               )}
@@ -284,6 +345,11 @@ function Sparkline({ points }: { points: number[] }) {
 function clampNum(v: string) {
   const n = Number(String(v).replace(/[^\d.]/g, ""));
   return Number.isFinite(n) ? n : 0;
+}
+
+function clampPct(v: string) {
+  const n = clampNum(v);
+  return Math.min(100, Math.max(0, n));
 }
 
 function money(n: number) {

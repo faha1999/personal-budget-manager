@@ -30,7 +30,7 @@ export const NAV_ITEMS = [
   { label: "Investments", href: "/app/investments" },
   { label: "Goals", href: "/app/goals" },
   { label: "Loans", href: "/app/loans" },
-  { label: "Compound Interest", href: "/app/tools/compound-interest" },
+  { label: "Sharia Profit Sharing", href: "/app/tools/sharia-profit" },
   { label: "FIRE Calculator", href: "/app/tools/fire" },
   { label: "Settings", href: "/app/settings" },
 ] as const;

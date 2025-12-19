@@ -260,9 +260,9 @@ export default async function DashboardPage() {
         <Card title="Planning tools" subtitle="Calculate smarter decisions">
           <div className="grid gap-3 sm:grid-cols-2">
             <ToolLink
-              href="/app/tools/compound-interest"
-              title="Compound Interest"
-              desc="Future value, interest earned"
+              href="/app/tools/sharia-profit"
+              title="Sharia Profit Sharing"
+              desc="Projected value, profit sharing"
             />
             <ToolLink
               href="/app/tools/fire"

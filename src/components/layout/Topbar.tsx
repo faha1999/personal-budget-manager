@@ -17,7 +17,7 @@ function titleFromPath(path: string) {
   if (path.startsWith("/app/goals")) return "Goals";
   if (path.startsWith("/app/loans")) return "Loans";
   if (path.startsWith("/app/receivables")) return "Receivables";
-  if (path.startsWith("/app/tools/compound-interest")) return "Compound Interest";
+  if (path.startsWith("/app/tools/sharia-profit")) return "Sharia Profit Sharing";
   if (path.startsWith("/app/tools/fire")) return "FIRE Calculator";
   if (path.startsWith("/app/settings")) return "Settings";
   return "Budget Manager";
