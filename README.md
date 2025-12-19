@@ -579,6 +579,9 @@ Create `.env.local` from `.env.example`.
 TURSO_DATABASE_URL=
 TURSO_AUTH_TOKEN=
 
+# Cron (optional)
+CRON_SECRET=
+
 # Auth
 AUTH_SECRET= # random string
 APP_URL=http://localhost:3000
@@ -599,6 +602,59 @@ pnpm install
 ```bash
 pnpm dev
 ```
+
+---
+
+# Contributing
+
+## Workflow
+
+1. Create a feature branch from `main`.
+2. Keep PRs focused; split UI vs API changes when it helps review.
+3. Update docs when adding env vars, scripts, or routes.
+4. Before pushing:
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm db:migrate
+```
+
+## Local development
+
+* Use `pnpm` for scripts to keep lockfile behavior consistent.
+* Keep secrets in `.env.local` and do not commit them.
+* Prefer feature flags or small increments over large refactors.
+
+## Code standards
+
+* Keep server logic in `src/server/*`; keep UI in `src/app/*`.
+* Use parameterized SQL and scope all queries by `user_id`.
+* Store timestamps as ISO UTC strings (`YYYY-MM-DDTHH:mm:ss.sssZ`).
+* Add indexes when new filters or sorts are introduced.
+
+## Database changes
+
+* Add a numbered migration in `src/server/db/migrations` (next sequence).
+* Update `src/server/db/schema.sql` to match the latest schema snapshot.
+* Keep all queries scoped by `user_id` for data isolation.
+
+## API conventions
+
+* Return `401` on unauthenticated access; validate all inputs.
+* Prefer `NextResponse.json` with a clear `{ ok: boolean }` shape.
+* Sanitize user input with shared helpers in `src/shared/security/*`.
+
+## Data retention
+
+* New users get `data_expires_at` set to 4 days in the future.
+* Keep `CRON_SECRET` configured and schedule `/api/cron/purge-expired-users`.
+
+## Pull request checklist
+
+* Describe the change and risk/impact in the PR.
+* Include migration notes (if any).
+* Add screenshots for UI changes.
 
 ---
 
@@ -628,6 +684,8 @@ Recommended scripts:
 * `typecheck` – tsc typecheck
 * `db:migrate` – apply migrations to Turso
 * `db:seed` – seed categories
+* `db:clean` – wipe all data (preserve schema)
+* `db:purge-expired-users` – delete users past `data_expires_at`
 
 ---
 
