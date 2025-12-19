@@ -2,6 +2,10 @@
 
 A complete personal finance planning + management web application for **Bangladesh users**, built as a **monolithic Next.js app** (App Router) with **TypeScript**, **Tailwind CSS**, and **Turso (libSQL/SQLite)**.
 
+**Live URL:** https://personal-budget-manager-beta.vercel.app/
+
+![Budget Manager](public/live%20-mage/Budget-Manager.png)
+
 ## Production checklist
 
 1. Export `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `AUTH_SECRET`, and `NEXT_PUBLIC_APP_URL` (or use `.env.local`) before any commands.
