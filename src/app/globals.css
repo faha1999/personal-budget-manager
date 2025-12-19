@@ -1,0 +1,316 @@
+
+
+/* TODO: Add global styles, fonts, and CSS variables for light mode-first design. */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* -------------------------------------------------------------------------- */
+/* Light-mode first design system (premium + clean)                            */
+/* -------------------------------------------------------------------------- */
+:root {
+  color-scheme: light;
+  /* Base */
+  --bg: 248 250 252;       /* slate-50 */
+  --surface: 255 255 255;  /* white */
+  --surface-2: 245 247 250;/* slightly tinted */
+  --border: 226 232 240;   /* slate-200 */
+  --ring: 99 102 241;      /* indigo-500 */
+
+  /* Text */
+  --ink: 15 23 42;         /* slate-900 */
+  --on-surface: 248 250 252; /* light text for dark surfaces */
+  --ink-strong: 15 23 42;  /* solid accents (buttons, badges) */
+  --muted: 71 85 105;      /* slate-600 */
+  --subtle: 100 116 139;   /* slate-500 */
+
+  /* Brand accents (premium innovation) */
+  --brand: 99 102 241;     /* indigo */
+  --brand-2: 16 185 129;   /* emerald */
+  --brand-3: 245 158 11;   /* amber */
+
+  /* Shadows */
+  --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  --shadow-sm: 0 6px 18px rgba(15, 23, 42, 0.06);
+
+  /* Radius */
+  --radius: 16px;
+
+  /* Background washes */
+  --wash: radial-gradient(60% 50% at 50% 0%, rgba(99, 102, 241, 0.12), transparent 60%),
+    radial-gradient(40% 40% at 10% 10%, rgba(16, 185, 129, 0.10), transparent 55%),
+    radial-gradient(40% 40% at 90% 20%, rgba(245, 158, 11, 0.08), transparent 55%);
+  --grain-opacity: 0.035;
+}
+
+.dark {
+  color-scheme: dark;
+  --bg: 10 12 24;
+  --surface: 15 18 32;
+  --surface-2: 18 22 38;
+  --border: 51 65 85;
+  --ring: 129 140 248;
+
+  --ink: 226 232 240;
+  --on-surface: 248 250 252;
+  --ink-strong: 51 65 85;
+  --muted: 148 163 184;
+  --subtle: 100 116 139;
+
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 10px 30px rgba(0, 0, 0, 0.25);
+
+  --wash: radial-gradient(60% 50% at 50% 0%, rgba(129, 140, 248, 0.10), transparent 60%),
+    radial-gradient(40% 40% at 12% 12%, rgba(74, 222, 128, 0.08), transparent 60%),
+    radial-gradient(40% 40% at 90% 20%, rgba(251, 191, 36, 0.06), transparent 60%);
+  --grain-opacity: 0.06;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+    "Apple Color Emoji", "Segoe UI Emoji";
+  color: rgb(var(--ink));
+  background: rgb(var(--bg));
+}
+
+/* Background + text helpers used in layout.tsx */
+.bg-app {
+  background-color: rgb(var(--bg));
+}
+.text-ink {
+  color: rgb(var(--ink));
+}
+
+/* Smooth fonts */
+.antialiased {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Selection */
+::selection {
+  background: rgba(var(--ring), 0.22);
+}
+
+/* Scrollbar (subtle) */
+*::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.25);
+  border-radius: 999px;
+  border: 2px solid rgba(248, 250, 252, 1);
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Utility component styles (optional)                                         */
+/* -------------------------------------------------------------------------- */
+@layer components {
+  .card {
+    @apply rounded-2xl border backdrop-blur;
+    background-color: rgba(var(--surface), 0.9);
+    border-color: rgb(var(--border));
+    box-shadow: var(--shadow-sm);
+  }
+
+  .card-hover {
+    @apply transition hover:-translate-y-[1px] hover:shadow-[0_18px_45px_rgba(15,23,42,0.10)];
+  }
+
+  .muted {
+    color: rgb(var(--muted));
+  }
+
+  .subtle {
+    color: rgb(var(--subtle));
+  }
+
+  .focus-ring {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    --tw-ring-color: rgb(var(--ring));
+    --tw-ring-offset-color: rgb(var(--bg));
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold text-white transition active:scale-[0.98];
+    background: linear-gradient(135deg, rgb(var(--brand)) 0%, rgb(var(--brand-2)) 100%);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold transition active:scale-[0.98];
+    background: rgba(var(--surface), 0.9);
+    border: 1px solid rgb(var(--border));
+    color: rgb(var(--ink));
+  }
+
+  .input {
+    @apply w-full rounded-xl border px-3 py-2 text-sm shadow-sm transition placeholder:opacity-70;
+    border-color: rgb(var(--border));
+    background-color: rgba(var(--surface), 0.95);
+    color: rgb(var(--ink));
+  }
+  .input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--ring), 0.18);
+    border-color: rgba(var(--ring), 0.6);
+  }
+}
+
+.theme-wash {
+  background: var(--wash);
+}
+
+.theme-grain {
+  opacity: var(--grain-opacity);
+  background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22 viewBox=%220 0 400 400%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22400%22 height=%22400%22 filter=%22url(%23n)%22 opacity=%220.4%22/%3E%3C/svg%3E");
+}
+
+/* -------------------------------------------------------------------------- */
+/* Theme-aware overrides for common utility classes used in the app           */
+/* -------------------------------------------------------------------------- */
+@layer utilities {
+  /* Backgrounds */
+  .bg-white {
+    background-color: rgb(var(--surface)) !important;
+  }
+  .bg-white\/50 {
+    background-color: rgba(var(--surface), 0.5) !important;
+  }
+  .bg-white\/60 {
+    background-color: rgba(var(--surface), 0.6) !important;
+  }
+  .bg-slate-100 {
+    background-color: rgba(var(--surface-2), 0.85) !important;
+  }
+  .bg-white\/70 {
+    background-color: rgba(var(--surface), 0.7) !important;
+  }
+  .bg-white\/75 {
+    background-color: rgba(var(--surface), 0.75) !important;
+  }
+  .bg-white\/80 {
+    background-color: rgba(var(--surface), 0.8) !important;
+  }
+  .bg-white\/90 {
+    background-color: rgba(var(--surface), 0.9) !important;
+  }
+  .bg-white\/95 {
+    background-color: rgba(var(--surface), 0.95) !important;
+  }
+  .bg-slate-50 {
+    background-color: rgb(var(--surface-2)) !important;
+  }
+  .bg-slate-200 {
+    background-color: rgba(var(--border), 1) !important;
+  }
+  .bg-slate-900 {
+    background-color: rgb(var(--ink-strong)) !important;
+    color: rgb(var(--on-surface)) !important;
+  }
+  .bg-slate-900\/5 {
+    background-color: rgba(var(--ink-strong), 0.05) !important;
+  }
+  .bg-slate-900\/10 {
+    background-color: rgba(var(--ink-strong), 0.1) !important;
+  }
+  .bg-slate-900\/25 {
+    background-color: rgba(var(--ink-strong), 0.25) !important;
+  }
+  .bg-slate-900\/50 {
+    background-color: rgba(var(--ink-strong), 0.5) !important;
+  }
+  .hover\:bg-white:hover {
+    background-color: rgb(var(--surface)) !important;
+  }
+  .hover\:bg-white\/50:hover {
+    background-color: rgba(var(--surface), 0.5) !important;
+  }
+  .hover\:bg-slate-50:hover {
+    background-color: rgb(var(--surface-2)) !important;
+  }
+  .hover\:bg-slate-100:hover {
+    background-color: rgba(var(--surface-2), 0.95) !important;
+  }
+  .hover\:bg-slate-200:hover {
+    background-color: rgba(var(--surface-2), 0.75) !important;
+  }
+
+  /* Text */
+  .text-slate-300 {
+    color: rgba(var(--subtle), 0.65) !important;
+  }
+  .text-slate-900 {
+    color: rgb(var(--ink)) !important;
+  }
+  .text-slate-800 {
+    color: rgb(var(--ink)) !important;
+  }
+  .text-slate-700 {
+    color: rgb(var(--muted)) !important;
+  }
+  .text-slate-600 {
+    color: rgb(var(--muted)) !important;
+  }
+  .text-slate-500 {
+    color: rgb(var(--subtle)) !important;
+  }
+  .text-slate-400 {
+    color: rgba(var(--subtle), 0.8) !important;
+  }
+  .text-white {
+    color: rgb(var(--on-surface)) !important;
+  }
+
+  /* Borders / rings */
+  .border-black\/5 {
+    border-color: rgba(var(--ink), 0.05) !important;
+  }
+  .border-black\/10 {
+    border-color: rgba(var(--ink), 0.1) !important;
+  }
+  .border-black\/20 {
+    border-color: rgba(var(--ink), 0.2) !important;
+  }
+  .border-slate-300 {
+    border-color: rgba(var(--border), 0.9) !important;
+  }
+  .border-slate-900 {
+    border-color: rgb(var(--ink-strong)) !important;
+  }
+  .ring-black\/5 {
+    --tw-ring-color: rgba(var(--ink), 0.05) !important;
+  }
+  .ring-black\/10 {
+    --tw-ring-color: rgba(var(--ink), 0.1) !important;
+  }
+  .ring-slate-900\/20 {
+    --tw-ring-color: rgba(var(--ink-strong), 0.2) !important;
+  }
+  .ring-slate-900\/25 {
+    --tw-ring-color: rgba(var(--ink-strong), 0.25) !important;
+  }
+  .ring-emerald-200 {
+    --tw-ring-color: rgba(52, 211, 153, 0.5) !important;
+  }
+  .ring-rose-200 {
+    --tw-ring-color: rgba(251, 113, 133, 0.5) !important;
+  }
+  .ring-emerald-200\/50 {
+    --tw-ring-color: rgba(52, 211, 153, 0.5) !important;
+  }
+}

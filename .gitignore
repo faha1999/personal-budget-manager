@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Builds
+.next/
+out/
+
+# Env files
+.env
+.env.local
+.env.production
+.env.development
+
+# Logs
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# System
+.DS_Store
+
+# TODO: extend ignore rules for uploads/backups if needed.
+
+# TypeScript build info
+tsconfig.tsbuildinfo
+*.tsbuildinfo
