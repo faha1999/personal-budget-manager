@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
-    "db:clean": "tsx scripts/clean.ts"
+    "db:clean": "tsx scripts/clean.ts",
+    "db:purge-expired-users": "tsx scripts/purge-expired-users.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",

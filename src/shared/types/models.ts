@@ -11,6 +11,7 @@ export type UserModel = {
   id: string;
   email: string;
   name: string | null;
+  data_expires_at?: string | null;
   created_at: string; // ISO
   updated_at: string; // ISO
 };

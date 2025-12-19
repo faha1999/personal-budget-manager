@@ -3,7 +3,14 @@ import { z } from "zod";
 import { setSessionCookie } from "@/server/auth/session";
 import { takeToken } from "@/server/security/rate-limit";
 import { sanitizeEmail } from "@/shared/security/sanitize";
-import { createSession, findUserByEmail, verifyPassword } from "@/server/services/auth.service";
+import {
+  createSession,
+  deleteUserById,
+  ensureUserDataExpiry,
+  findUserByEmail,
+  isUserDataExpired,
+  verifyPassword,
+} from "@/server/services/auth.service";
 
 const SESSION_DAYS = 30;
 
@@ -43,11 +50,24 @@ export async function POST(req: Request) {
   const password = parsed.data.password;
 
   const user = await findUserByEmail(email);
-  const { id, email: userEmail, name, password_hash } = (user as any) ?? {};
+  if (!user) {
+    return jsonError("Invalid credentials.", 401);
+  }
+
+  const { id, email: userEmail, name, password_hash, data_expires_at } = user as any;
+
+  if (isUserDataExpired(data_expires_at)) {
+    await deleteUserById(id);
+    return jsonError("Account data expired. Please register again.", 410);
+  }
 
   const passwordOk = typeof password_hash === "string" ? await verifyPassword(password, password_hash) : false;
-  if (!user || !passwordOk) {
+  if (!passwordOk) {
     return jsonError("Invalid credentials.", 401);
+  }
+
+  if (!data_expires_at) {
+    await ensureUserDataExpiry(id);
   }
 
   const { sessionId, expiresAt } = await createSession({ userId: id, days: SESSION_DAYS });

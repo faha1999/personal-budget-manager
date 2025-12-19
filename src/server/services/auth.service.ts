@@ -6,6 +6,11 @@ import bcrypt from "bcryptjs";
 import { db } from "@/server/db/client";
 import { sanitizeEmail, sanitizeText } from "@/shared/security/sanitize";
 
+const USER_DATA_RETENTION_DAYS = 4;
+const EXPIRED_USERS_SWEEP_INTERVAL_MS = 5 * 60 * 1000;
+
+let lastExpiredUsersSweepAt = 0;
+
 function nowISO() {
   return new Date().toISOString();
 }
@@ -14,6 +19,17 @@ function addDaysISO(days: number) {
   const d = new Date();
   d.setDate(d.getDate() + days);
   return d.toISOString();
+}
+
+function dataExpiryISO() {
+  return addDaysISO(USER_DATA_RETENTION_DAYS);
+}
+
+function isExpiredISO(value: string | null | undefined) {
+  if (!value) return false;
+  const ts = Date.parse(value);
+  if (!Number.isFinite(ts)) return true;
+  return ts <= Date.now();
 }
 
 function randomId(prefix: string) {
@@ -57,16 +73,62 @@ export async function createUser(input: { email: string; name?: string | null; p
   const userId = randomId("usr");
   const passwordHash = await hashPassword(input.password);
   const safeName = input.name ? sanitizeText(input.name, { maxLength: 120 }) : null;
+  const dataExpiresAt = dataExpiryISO();
 
   await db().execute({
     sql: `
-      INSERT INTO users (id, email, name, password_hash)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO users (id, email, name, password_hash, data_expires_at)
+      VALUES (?, ?, ?, ?, ?)
     `,
-    args: [userId, email, safeName ?? null, passwordHash],
+    args: [userId, email, safeName ?? null, passwordHash, dataExpiresAt],
   });
 
   return userId;
+}
+
+export function isUserDataExpired(expiresAt: string | null | undefined) {
+  return isExpiredISO(expiresAt);
+}
+
+export async function ensureUserDataExpiry(userId: string) {
+  const dataExpiresAt = dataExpiryISO();
+  await db().execute({
+    sql: `
+      UPDATE users
+      SET data_expires_at = COALESCE(data_expires_at, ?)
+      WHERE id = ?
+    `,
+    args: [dataExpiresAt, userId],
+  });
+}
+
+export async function deleteUserById(userId: string) {
+  await db().execute({
+    sql: `DELETE FROM users WHERE id = ?`,
+    args: [userId],
+  });
+}
+
+export async function purgeExpiredUsers() {
+  const res = await db().execute({
+    sql: `
+      DELETE FROM users
+      WHERE data_expires_at IS NOT NULL
+        AND data_expires_at <= strftime('%Y-%m-%dT%H:%M:%fZ','now')
+    `,
+  });
+  return Number(res.rowsAffected ?? 0);
+}
+
+export async function maybePurgeExpiredUsers() {
+  const now = Date.now();
+  if (now - lastExpiredUsersSweepAt < EXPIRED_USERS_SWEEP_INTERVAL_MS) return 0;
+  lastExpiredUsersSweepAt = now;
+  try {
+    return await purgeExpiredUsers();
+  } catch {
+    return 0;
+  }
 }
 
 export async function createSession(input: { userId: string; days?: number }) {
@@ -100,10 +162,12 @@ export async function deleteSessionByRawToken(rawToken: string) {
 export async function getSessionByRawToken(rawToken: string) {
   const hashed = hashSessionToken(rawToken);
 
+  await maybePurgeExpiredUsers();
+
   const fetchSession = async (token: string) => {
     const res = await db().execute({
       sql: `
-        SELECT s.*, u.email, u.name
+        SELECT s.*, u.email, u.name, u.data_expires_at
         FROM sessions s
         JOIN users u ON u.id = s.user_id
         WHERE s.id = ?
@@ -120,6 +184,16 @@ export async function getSessionByRawToken(rawToken: string) {
     row = await fetchSession(rawToken);
   }
   if (!row) return null;
+
+  const dataExpiresAt = row.data_expires_at ? String(row.data_expires_at) : null;
+  if (isUserDataExpired(dataExpiresAt)) {
+    try {
+      await deleteUserById(String(row.user_id));
+    } catch {
+      // best-effort delete to avoid blocking auth flows
+    }
+    return null;
+  }
 
   // expired?
   const expiresAt = new Date(String(row.expires_at)).getTime();

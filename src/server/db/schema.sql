@@ -8,9 +8,12 @@ CREATE TABLE IF NOT EXISTS users (
   email           TEXT NOT NULL UNIQUE,
   name            TEXT,
   password_hash   TEXT NOT NULL,
+  data_expires_at TEXT,
   created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
   updated_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
+
+CREATE INDEX IF NOT EXISTS idx_users_data_expires_at ON users(data_expires_at);
 
 CREATE TABLE IF NOT EXISTS sessions (
   id              TEXT PRIMARY KEY,
