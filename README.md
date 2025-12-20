@@ -4,7 +4,7 @@ A complete personal finance planning + management web application for **Banglade
 
 **Live URL:** https://personal-budget-manager-beta.vercel.app/
 
-![Budget Manager](public/live%20-mage/Budget-Manager.png)
+![Budget Manager](public/live-image/Budget-Manager.png)
 
 ## Production checklist
 
