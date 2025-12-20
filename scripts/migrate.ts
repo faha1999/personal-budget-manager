@@ -1,8 +1,8 @@
-// TODO: Implement migration runner for Turso/SQLite using schema.sql or migrations folder.
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { createClient } from "@libsql/client";
+import { MIGRATIONS } from "../src/server/db/migrations";
 
 async function main() {
   const localDbPath = path.join(process.cwd(), ".data", "local.db");
@@ -16,12 +16,6 @@ async function main() {
 
   const client = createClient({ url, authToken });
 
-  const migrationsDir = path.join(process.cwd(), "src", "server", "db", "migrations");
-  const files = fs
-    .readdirSync(migrationsDir)
-    .filter((f) => f.endsWith(".sql"))
-    .sort((a, b) => a.localeCompare(b));
-
   // Create migrations table
   await client.execute(`
     CREATE TABLE IF NOT EXISTS _migrations (
@@ -30,25 +24,25 @@ async function main() {
     );
   `);
 
-  for (const file of files) {
-    const id = file;
+  for (const migration of MIGRATIONS) {
+    const id = migration.id;
     const already = await client.execute({
       sql: `SELECT id FROM _migrations WHERE id = ? LIMIT 1`,
       args: [id],
     });
 
     if (already.rows.length > 0) {
-      console.log(`✓ Skipped ${file}`);
+      console.log(`✓ Skipped ${id}`);
       continue;
     }
 
-    const sql = fs.readFileSync(path.join(migrationsDir, file), "utf8").trim();
+    const sql = migration.sql.trim();
     if (!sql) {
-      console.log(`- Empty migration ${file}, skipping...`);
+      console.log(`- Empty migration ${id}, skipping...`);
       continue;
     }
 
-    console.log(`→ Applying ${file}`);
+    console.log(`→ Applying ${id}`);
     try {
       // Simple: run as a single statement batch.
       // If you need multiple statements, keep them separated with ';' and split.
@@ -56,17 +50,22 @@ async function main() {
       for (const stmt of statements) {
         const s = stmt.trim();
         if (!s) continue;
-        await client.execute(s);
+        try {
+          await client.execute(s);
+        } catch (err) {
+          if (isIgnorableMigrationError(err)) continue;
+          throw err;
+        }
       }
 
       await client.execute({
-        sql: `INSERT INTO _migrations (id, applied_at) VALUES (?, ?)`,
+        sql: `INSERT OR IGNORE INTO _migrations (id, applied_at) VALUES (?, ?)`,
         args: [id, new Date().toISOString()],
       });
 
-      console.log(`✓ Applied ${file}`);
+      console.log(`✓ Applied ${id}`);
     } catch (err) {
-      console.error(`✗ Failed ${file}`);
+      console.error(`✗ Failed ${id}`);
       throw err;
     }
   }
@@ -82,6 +81,11 @@ function splitSqlStatements(sql: string): string[] {
     .split(";")
     .map((s) => s.trim())
     .filter(Boolean);
+}
+
+function isIgnorableMigrationError(err: unknown) {
+  const message = String((err as Error)?.message || "");
+  return message.includes("duplicate column name");
 }
 
 main().catch((e) => {

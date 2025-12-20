@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createClient, type Client } from "@libsql/client";
+import { MIGRATIONS } from "./migrations";
 
 type ExecuteFn = (statement: string | { sql: string; args?: (string | number | null)[] }) => Promise<any>;
 type DbHandle = (() => { execute: ExecuteFn }) & { execute: ExecuteFn };
@@ -55,8 +56,6 @@ function shouldFallback(err: unknown) {
 }
 
 async function ensureMigrations(url: string, client: Client) {
-  if (!url.startsWith("file:")) return;
-
   let promise = migrationsByUrl.get(url);
   if (!promise) {
     promise = runMigrations(client);
@@ -66,12 +65,6 @@ async function ensureMigrations(url: string, client: Client) {
 }
 
 async function runMigrations(client: Client) {
-  const migrationsDir = path.join(process.cwd(), "src", "server", "db", "migrations");
-  const files = fs
-    .readdirSync(migrationsDir)
-    .filter((f) => f.endsWith(".sql"))
-    .sort((a, b) => a.localeCompare(b));
-
   await client.execute(`
     CREATE TABLE IF NOT EXISTS _migrations (
       id TEXT PRIMARY KEY,
@@ -79,25 +72,29 @@ async function runMigrations(client: Client) {
     );
   `);
 
-  for (const file of files) {
+  for (const migration of MIGRATIONS) {
     const applied = await client.execute({
       sql: `SELECT id FROM _migrations WHERE id = ? LIMIT 1`,
-      args: [file],
+      args: [migration.id],
     });
     if (applied.rows.length > 0) continue;
 
-    const sql = fs.readFileSync(path.join(migrationsDir, file), "utf8").trim();
-    const statements = splitSqlStatements(sql);
+    const statements = splitSqlStatements(migration.sql.trim());
 
     for (const stmt of statements) {
       const s = stmt.trim();
       if (!s) continue;
-      await client.execute(s);
+      try {
+        await client.execute(s);
+      } catch (err) {
+        if (isIgnorableMigrationError(err)) continue;
+        throw err;
+      }
     }
 
     await client.execute({
-      sql: `INSERT INTO _migrations (id, applied_at) VALUES (?, ?)`,
-      args: [file, new Date().toISOString()],
+      sql: `INSERT OR IGNORE INTO _migrations (id, applied_at) VALUES (?, ?)`,
+      args: [migration.id, new Date().toISOString()],
     });
   }
 }
@@ -107,6 +104,11 @@ function splitSqlStatements(sql: string): string[] {
     .split(";")
     .map((s) => s.trim())
     .filter(Boolean);
+}
+
+function isIgnorableMigrationError(err: unknown) {
+  const message = String((err as Error)?.message || "");
+  return message.includes("duplicate column name");
 }
 
 const dbClient = {
