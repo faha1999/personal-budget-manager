@@ -104,6 +104,20 @@ export default async function ProtectedLayout({
           {/* Main */}
           <main className="min-w-0">{children}</main>
         </div>
+
+        <footer className="border-t border-black/5 pb-8 pt-5 text-xs text-slate-500">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span>© {new Date().getFullYear()} Budget Manager</span>
+            <a
+              href="https://github.com/faha1999"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="font-medium text-slate-600 hover:text-slate-900"
+            >
+              Build with ♥ by Faha 
+            </a>
+          </div>
+        </footer>
       </div>
     </div>
   );

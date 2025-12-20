@@ -122,9 +122,19 @@ export default function PublicLandingPage() {
 
         {/* Footer */}
         <footer className="mt-14 border-t border-black/5 pt-6 text-xs text-slate-500">
-          <p>
-            © {new Date().getFullYear()} Budget Manager. Personal finance tracking — no bank integrations.
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p>
+              © {new Date().getFullYear()} Budget Manager. Personal finance tracking — no bank integrations.
+            </p>
+            <a
+              href="https://github.com/faha1999"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="font-medium text-slate-600 hover:text-slate-900"
+            >
+              Build with ♥ by Faha 
+            </a>
+          </div>
         </footer>
       </div>
     </main>
